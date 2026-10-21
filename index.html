@@ -3,124 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Peluquería</title>
+    <title>Reserva tu Cita - Peluquería</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
         h2 { text-align: center; color: #333; }
         label { font-weight: bold; display: block; margin-top: 15px; }
         input, button { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border-radius: 5px; border: 1px solid #ccc; }
-        .slot-admin { display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-top: 8px; background: #e9ecef; border-radius: 5px; }
-        .btn-accion { padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; color: white; width: auto; margin: 0; }
-        .btn-bloquear { background: #dc3545; }
-        .btn-desbloquear { background: #28a745; }
-        .hidden { display: none; }
+        .slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .slot { padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; text-align: center; }
+        .slot:disabled { background: #dc3545; cursor: not-allowed; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 300px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Panel Peluquero</h2>
-    
-    <!-- Login -->
-    <div id="loginSection">
-        <label>Contraseña:</label>
-        <input type="password" id="passAdmin" placeholder="Introduce la contraseña">
-        <button onclick="verificarLogin()" style="background: #007bff; color: white; margin-top: 15px;">Entrar</button>
-    </div>
+    <h2>Reserva tu Cita</h2>
+    <label for="fecha">Selecciona el día:</label>
+    <input type="date" id="fecha" onchange="cargarHoras()">
 
-    <!-- Panel de Control (Oculto hasta hacer login) -->
-    <div id="panelSection" class="hidden">
-        <label for="fechaAdmin">Selecciona el día a gestionar:</label>
-        <input type="date" id="fechaAdmin" onchange="cargarAdminData()">
-        
-        <div id="listaAdminHoras" style="margin-top: 15px;"></div>
+    <div id="lista-horas" class="slots"></div>
+</div>
+
+<!-- Modal para datos del cliente -->
+<div id="modalReserva" class="modal">
+    <div class="modal-content">
+        <h3>Tus Datos</h3>
+        <p id="infoCitaSeleccionada"></p>
+        <label>Nombre:</label>
+        <input type="text" id="nombreCliente" placeholder="Tu nombre">
+        <label>Teléfono:</label>
+        <input type="tel" id="telefonoCliente" placeholder="Tu teléfono">
+        <button onclick="confirmarReserva()" style="background: #007bff; color: white; margin-top: 15px;">Confirmar Cita</button>
+        <button onclick="cerrarModal()" style="background: #6c757d; color: white; margin-top: 5px;">Cancelar</button>
     </div>
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec"; // <-- PEGA TU MISMA URL DE APPS SCRIPT AQUÍ
-    let passwordActual = "";
+    const API_URL = "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec"; // <-- PEGA TU URL AQUÍ
+    let horaSeleccionada = "";
 
-    async function verificarLogin() {
-        passwordActual = document.getElementById('passAdmin').value;
-        const fecha = new Date().toISOString().split('T')[0];
-        
-        // Comprobamos si la contraseña es correcta pidiendo los datos
-        let response = await fetch(`${API_URL}?action=getAdminData&pass=${passwordActual}&fecha=${fecha}`);
-        let data = await response.json();
+    // Poner la fecha de hoy por defecto en el selector
+    document.getElementById('fecha').valueAsDate = new Date();
+    cargarHoras();
 
-        if (data.error) {
-            alert("Contraseña incorrecta");
-        } else {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('panelSection').style.display = 'block';
-            document.getElementById('fechaAdmin').valueAsDate = new Date();
-            cargarAdminData();
-        }
-    }
+    async function cargarHoras() {
+        const fecha = document.getElementById('fecha').value;
+        const contenedor = document.getElementById('lista-horas');
+        contenedor.innerHTML = "Cargando...";
 
-    async function cargarAdminData() {
-        const fecha = document.getElementById('fechaAdmin').value;
-        const contenedor = document.getElementById('listaAdminHoras');
-        contenedor.innerHTML = "Cargando citas...";
+        try {
+            let response = await fetch(`${API_URL}?action=getDisponibilidad&fecha=${fecha}`);
+            let ocupadas = await response.json();
 
-        let response = await fetch(`${API_URL}?action=getAdminData&pass=${passwordActual}&fecha=${fecha}`);
-        let registros = await response.json();
-
-        contenedor.innerHTML = "";
-
-        let inicio = 11 * 60 + 30; // 11:30
-        let fin = 23 * 60; // 23:00
-
-        for (let m = inicio; m <= fin; m += 30) {
-            let h = Math.floor(m / 60);
-            let min = m % 60;
-            let horaStr = (h < 10 ? "0" + h : h) + ":" + (min === 0 ? "00" : min);
-
-            let registroHora = registros.find(r => r.fecha === fecha && r.hora === horaStr);
+            contenedor.innerHTML = "";
             
-            let div = document.createElement('div');
-            div.className = "slot-admin";
+            // Generar horas de 11:30 a 23:00 cada 30 min
+            let inicio = 11 * 60 + 30; // 11:30 en minutos
+            let fin = 23 * 60; // 23:00 en minutos
+            
+            let ahora = new Date();
+            let esHoy = (fecha === ahora.toISOString().split('T')[0]);
+            let minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
 
-            let textoEstado = horaStr + " - Libre";
-            let btnHtml = `<button class="btn-accion btn-bloquear" onclick="toggleBloqueo('${horaStr}', 'bloquear')">Bloquear</button>`;
+            for (let m = inicio; m <= fin; m += 30) {
+                let h = Math.floor(m / 60);
+                let min = m % 60;
+                let horaStr = (h < 10 ? "0" + h : h) + ":" + (min === 0 ? "00" : min);
 
-            if (registroHora) {
-                if (registroHora.estado === "Reservado") {
-                    textoEstado = `${horaStr} - 👤 ${registroHora.nombre} (${registroHora.telefono})`;
-                    btnHtml = `<button class="btn-accion btn-bloquear" onclick="toggleBloqueo('${horaStr}', 'bloquear')">Anular Cita</button>`;
-                } else if (registroHora.estado === "BloqueadoPeluquero") {
-                    textoEstado = `${horaStr} - 🚫 Bloqueado`;
-                    btnHtml = `<button class="btn-accion btn-desbloquear" onclick="toggleBloqueo('${horaStr}', 'desbloquear')">Desbloquear</button>`;
+                // Comprobar si está ocupada o bloqueada
+                let ocupadaInfo = ocupadas.find(o => o.hora === horaStr);
+                let estaOcupada = !!ocupadaInfo;
+
+                // Regla de 1 hora de antelación si es hoy
+                let pasadaDeHora = false;
+                if (esHoy && (m <= minutosActuales + 60)) {
+                    pasadaDeHora = true;
                 }
-            }
 
-            div.innerHTML = `<span>${textoEstado}</span>${btnHtml}`;
-            contenedor.appendChild(div);
+                let btn = document.createElement('button');
+                btn.className = "slot";
+                btn.innerText = horaStr;
+
+                if (estaOcupada || pasadaDeHora) {
+                    btn.disabled = true;
+                    if(ocupadaInfo && ocupadaInfo.estado === "BloqueadoPeluquero") {
+                        btn.innerText += " (No disponible)";
+                    } else if(estaOcupada) {
+                        btn.innerText += " (Ocupado)";
+                    }
+                } else {
+                    btn.onclick = () => abrirModal(horaStr);
+                }
+
+                contenedor.appendChild(btn);
+            }
+        } catch (error) {
+            contenedor.innerHTML = "Error al cargar disponibilidad.";
+            console.error(error);
         }
     }
 
-    async function toggleBloqueo(hora, accion) {
-        const fecha = document.getElementById('fechaAdmin').value;
+    function abrirModal(hora) {
+        horaSeleccionada = hora;
+        document.getElementById('infoCitaSeleccionada').innerText = `Día: ${document.getElementById('fecha').value} a las ${hora}`;
+        document.getElementById('modalReserva').style.display = 'flex';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalReserva').style.display = 'none';
+    }
+
+    async function confirmarReserva() {
+        const nombre = document.getElementById('nombreCliente').value;
+        const telefono = document.getElementById('telefonoCliente').value;
+        const fecha = document.getElementById('fecha').value;
+
+        if (!nombre || !telefono) {
+            alert("Por favor, rellena tu nombre y teléfono.");
+            return;
+        }
 
         let datos = {
-            action: "toggleBloqueo",
-            pass: passwordActual,
+            action: "crearReserva",
             fecha: fecha,
-            hora: hora
+            hora: horaSeleccionada,
+            nombre: nombre,
+            telefono: telefono
         };
 
-        let response = await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify(datos)
-        });
-        let resultado = await response.json();
-
-        if (resultado.status === "success") {
-            cargarAdminData();
-        } else {
-            alert("Error al actualizar");
+        try {
+            let response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(datos)
+            });
+            let resultado = await response.json();
+            
+            if (resultado.status === "success") {
+                alert("¡Cita reservada con éxito!");
+                cerrarModal();
+                document.getElementById('nombreCliente').value = "";
+                document.getElementById('telefonoCliente').value = "";
+                cargarHoras(); // Recargar horas
+            } else {
+                alert("Hubo un error al reservar.");
+            }
+        } catch (error) {
+            alert("Error de conexión.");
+            console.error(error);
         }
     }
 </script>
