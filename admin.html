@@ -17,6 +17,11 @@
         .btn-bloquear { background: #dc3545; }
         .btn-desbloquear { background: #28a745; }
         .btn-dia { background: #343a40; color: white; margin-top: 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; padding: 12px; }
+        
+        .loading-container { text-align: center; padding: 30px; }
+        .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .hidden { display: none; }
     </style>
 </head>
@@ -33,7 +38,7 @@
 
     <div id="panelSection" class="hidden">
         <label for="fechaAdmin">Selecciona el día a gestionar:</label>
-        <input type="date" id="fechaAdmin" onchange="cargarAdminData()">
+        <input type="date" id="fechaAdmin" onchange="cargarAdminData(true)">
         
         <button id="btnDiaEntero" class="btn-dia" onclick="toggleDiaCompleto()">Bloquear Día Entero</button>
 
@@ -42,7 +47,7 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec"; // <-- PEGA TU URL DE APPS SCRIPT AQUÍ
+    const API_URL = "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec"; // <-- PEGA TU URL AQUÍ
     let passwordActual = "";
     let diaBloqueadoActual = false;
 
@@ -59,23 +64,37 @@
             document.getElementById('loginSection').style.display = 'none';
             document.getElementById('panelSection').style.display = 'block';
             document.getElementById('fechaAdmin').valueAsDate = new Date();
-            cargarAdminData();
+            cargarAdminData(true);
         }
     }
 
-    async function cargarAdminData() {
+    async function cargarAdminData(forzar = false) {
         const fecha = document.getElementById('fechaAdmin').value;
         const contenedor = document.getElementById('listaAdminHoras');
-        contenedor.innerHTML = "Cargando citas...";
+        
+        contenedor.innerHTML = `
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <span style="color: #666; font-size: 13px;">Cargando gestión del día...</span>
+            </div>
+        `;
 
-        let response = await fetch(`${API_URL}?action=getAdminData&pass=${passwordActual}&fecha=${fecha}`);
-        let registros = await response.json();
+        let registros = [];
+        let cacheKey = "admin_cache_" + fecha;
+        let ahoraMs = new Date().getTime();
+
+        if (!forzar && sessionStorage.getItem(cacheKey)) {
+            registros = JSON.parse(sessionStorage.getItem(cacheKey));
+        } else {
+            let response = await fetch(`${API_URL}?action=getAdminData&pass=${passwordActual}&fecha=${fecha}`);
+            registros = await response.json();
+            sessionStorage.setItem(cacheKey, JSON.stringify(registros));
+        }
 
         contenedor.innerHTML = "";
 
-        let inicio = 11 * 60 + 30; // 11:30
-        let fin = 23 * 60; // 23:00
-
+        let inicio = 11 * 60 + 30;
+        let fin = 23 * 60;
         let totalBloqueadosPeluquero = 0;
         let totalHoras = 0;
 
@@ -122,40 +141,23 @@
 
     async function toggleBloqueo(hora) {
         const fecha = document.getElementById('fechaAdmin').value;
+        let datos = { action: "toggleBloqueo", pass: passwordActual, fecha: fecha, hora: hora };
 
-        let datos = {
-            action: "toggleBloqueo",
-            pass: passwordActual,
-            fecha: fecha,
-            hora: hora
-        };
-
-        await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify(datos)
-        });
-        cargarAdminData();
+        await fetch(API_URL, { method: "POST", body: JSON.stringify(datos) });
+        sessionStorage.clear();
+        cargarAdminData(true);
     }
 
     async function toggleDiaCompleto() {
         const fecha = document.getElementById('fechaAdmin').value;
-        let nuevoEstadoBloqueo = !diaBloqueadoActual;
+        let datos = { action: "toggleBloqueoDia", pass: passwordActual, fecha: fecha, bloquear: !diaBloqueadoActual };
 
-        let datos = {
-            action: "toggleBloqueoDia",
-            pass: passwordActual,
-            fecha: fecha,
-            bloquear: nuevoEstadoBloqueo
-        };
-
-        let response = await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify(datos)
-        });
+        let response = await fetch(API_URL, { method: "POST", body: JSON.stringify(datos) });
         let resultado = await response.json();
 
         if (resultado.status === "success") {
-            cargarAdminData();
+            sessionStorage.clear();
+            cargarAdminData(true);
         } else {
             alert("Error al actualizar el día.");
         }
