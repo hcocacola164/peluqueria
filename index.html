@@ -2,171 +2,841 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
     <title>Reserva tu Cita - Peluquería</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 400px; box-sizing: border-box; }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
-        input, button { width: 100%; padding: 12px; margin-top: 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
-        input[type="date"] { background: #fff; font-weight: 500; }
-        .slots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
-        .slot { padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; text-align: center; font-weight: 600; font-size: 15px; }
-        .slot:disabled { background: #e0e0e0; color: #888; cursor: not-allowed; }
-        
-        .loading-container { text-align: center; padding: 30px; grid-column: span 2; }
-        .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 10px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 320px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-        .btn-primary { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .btn-secondary { background: #6c757d; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                sans-serif;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow:
+                0 4px 15px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+            color: #555;
+        }
+        input,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        input[type="date"] {
+            background: #fff;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .slots {
+            display: grid;
+            grid-template-columns:
+                repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .slot {
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            font-size: 15px;
+            transition:
+                transform 0.1s,
+                opacity 0.2s;
+        }
+        .slot:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
+        .slot:disabled {
+            background: #e0e0e0;
+            color: #888;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+        .slot.reservado {
+            background: #e0e0e0;
+            color: #888;
+            cursor: not-allowed;
+        }
+        .slot.bloqueado {
+            background: #d6d6d6;
+            color: #777;
+            cursor: not-allowed;
+        }
+        .slot.pasado {
+            background: #eeeeee;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+        .loading-container {
+            text-align: center;
+            padding: 30px;
+            grid-column: span 2;
+        }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top:
+                3px solid #007bff;
+            border-radius: 50%;
+            animation:
+                spin 0.6s linear infinite;
+            margin:
+                0 auto 10px auto;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .mensaje {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            padding: 20px 5px;
+            grid-column: span 2;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow:
+                0 5px 20px rgba(0,0,0,0.2);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .btn-primary:disabled {
+            background: #9bbce0;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h2>Reserva tu Cita</h2>
-    <label for="fecha">Selecciona el día:</label>
-    <input type="date" id="fecha" onchange="cargarHoras(true)">
-
-    <div id="lista-horas" class="slots"></div>
+    <h2>
+        Reserva tu Cita
+    </h2>
+    <label for="fecha">
+        Selecciona el día:
+    </label>
+    <input
+        type="date"
+        id="fecha"
+        onchange="cargarHoras(true)"
+    >
+    <div class="info">
+        Selecciona una hora disponible.
+    </div>
+    <div
+        id="lista-horas"
+        class="slots"
+    ></div>
 </div>
-
-<div id="modalReserva" class="modal">
+<!-- =========================================
+     MODAL DE RESERVA
+========================================= -->
+<div
+    id="modalReserva"
+    class="modal"
+>
     <div class="modal-content">
-        <h3 style="margin-top:0; color:#333;">Tus Datos</h3>
-        <p id="infoCitaSeleccionada" style="color: #666; font-size: 14px;"></p>
-        <label>Nombre y Apellido:</label>
-        <input type="text" id="nombreCliente" placeholder="Ej. Juan Pérez">
-        <label>Teléfono:</label>
-        <input type="tel" id="telefonoCliente" placeholder="Ej. 600000000">
-        <button class="btn-primary" onclick="confirmarReserva()">Confirmar Cita</button>
-        <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+        <h3>
+            Tus Datos
+        </h3>
+        <p
+            id="infoCitaSeleccionada"
+            style="
+                color:#666;
+                font-size:14px;
+            "
+        ></p>
+        <label>
+            Nombre y Apellido:
+        </label>
+        <input
+            type="text"
+            id="nombreCliente"
+            placeholder="Ej. Juan Pérez"
+            autocomplete="name"
+        >
+        <label>
+            Teléfono:
+        </label>
+        <input
+            type="tel"
+            id="telefonoCliente"
+            placeholder="Ej. 600000000"
+            autocomplete="tel"
+        >
+        <button
+            id="btnConfirmar"
+            class="btn-primary"
+            onclick="confirmarReserva()"
+        >
+            Confirmar Cita
+        </button>
+        <button
+            class="btn-secondary"
+            onclick="cerrarModal()"
+        >
+            Cancelar
+        </button>
     </div>
 </div>
-
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec"; // <-- PEGA TU URL AQUÍ
-    let horaSeleccionada = "";
-
-    document.getElementById('fecha').valueAsDate = new Date();
-    cargarHoras(true);
-
-    async function cargarHoras(forzarRecarga = false) {
-        const fecha = document.getElementById('fecha').value;
-        const contenedor = document.getElementById('lista-horas');
-        
+/*************************************************
+ * CONFIGURACIÓN
+ *************************************************/
+const API_URL =
+    "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec";
+let horaSeleccionada = "";
+/*************************************************
+ * INICIO
+ *************************************************/
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+        establecerFechaMinima();
+        establecerFechaActual();
+        cargarHoras(true);
+    }
+);
+/*************************************************
+ * IMPEDIR SELECCIONAR FECHAS PASADAS
+ *************************************************/
+function establecerFechaMinima() {
+    const ahora = new Date();
+    const anio =
+        ahora.getFullYear();
+    const mes =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(2, "0");
+    const dia =
+        String(
+            ahora.getDate()
+        ).padStart(2, "0");
+    const fechaMinima =
+        `${anio}-${mes}-${dia}`;
+    document
+        .getElementById("fecha")
+        .min = fechaMinima;
+}
+/*************************************************
+ * PONER FECHA DE HOY
+ *************************************************/
+function establecerFechaActual() {
+    const ahora = new Date();
+    const anio =
+        ahora.getFullYear();
+    const mes =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(2, "0");
+    const dia =
+        String(
+            ahora.getDate()
+        ).padStart(2, "0");
+    const fechaHoy =
+        `${anio}-${mes}-${dia}`;
+    document
+        .getElementById("fecha")
+        .value = fechaHoy;
+}
+/*************************************************
+ * CARGAR HORAS DISPONIBLES
+ *************************************************/
+async function cargarHoras(
+    forzarRecarga = false
+) {
+    const fecha =
+        document
+            .getElementById("fecha")
+            .value;
+    const contenedor =
+        document
+            .getElementById("lista-horas");
+    if (!fecha) {
         contenedor.innerHTML = `
-            <div class="loading-container">
-                <div class="spinner"></div>
-                <span style="color: #666; font-size: 13px;">Cargando horarios...</span>
+            <div class="mensaje">
+                Selecciona una fecha.
             </div>
         `;
-
-        try {
-            let ocupadas = [];
-            let cacheKey = "cache_" + fecha;
-            let cacheTimeKey = "cache_time_" + fecha;
-            let ahoraMs = new Date().getTime();
-
-            if (!forzarRecarga && sessionStorage.getItem(cacheKey) && (ahoraMs - sessionStorage.getItem(cacheTimeKey) < 15000)) {
-                ocupadas = JSON.parse(sessionStorage.getItem(cacheKey));
-            } else {
-                let response = await fetch(`${API_URL}?action=getDisponibilidad&fecha=${fecha}`);
-                ocupadas = await response.json();
-                sessionStorage.setItem(cacheKey, JSON.stringify(ocupadas));
-                sessionStorage.setItem(cacheTimeKey, ahoraMs);
-            }
-
-            contenedor.innerHTML = "";
-            
-            let inicio = 11 * 60 + 30;
-            let fin = 23 * 60;
-            let ahora = new Date();
-            let esHoy = (fecha === ahora.toISOString().split('T')[0]);
-            let minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
-
-            for (let m = inicio; m <= fin; m += 30) {
-                let h = Math.floor(m / 60);
-                let min = m % 60;
-                let horaStr = (h < 10 ? "0" + h : h) + ":" + (min === 0 ? "00" : min);
-
-                let ocupadaInfo = ocupadas.find(o => o.hora === horaStr);
-                let estaOcupada = !!ocupadaInfo;
-
-                let pasadaDeHora = false;
-                if (esHoy && (m <= minutosActuales + 60)) {
-                    pasadaDeHora = true;
-                }
-
-                let btn = document.createElement('button');
-                btn.className = "slot";
-                btn.innerText = horaStr;
-
-                if (estaOcupada || pasadaDeHora) {
-                    btn.disabled = true;
-                    if(ocupadaInfo && ocupadaInfo.estado === "BloqueadoPeluquero") {
-                        btn.innerText = horaStr + " 🚫";
-                    } else if(ocupadaInfo && ocupadaInfo.estado === "Reservado") {
-                        btn.innerText = horaStr + " ❌";
-                    } else {
-                        btn.style.display = "none";
+        return;
+    }
+    /*********************************************
+     * MOSTRAR CARGANDO
+     *********************************************/
+    contenedor.innerHTML = `
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <span
+                style="
+                    color:#666;
+                    font-size:13px;
+                "
+            >
+                Comprobando disponibilidad...
+            </span>
+        </div>
+    `;
+    try {
+        let ocupadas = [];
+        /*****************************************
+         * CARGAR SIEMPRE DESDE GOOGLE SHEETS
+         *
+         * Si forzarRecarga es true no usamos
+         * ninguna información anterior.
+         *****************************************/
+        const url =
+            `${API_URL}?action=getDisponibilidad&fecha=${encodeURIComponent(fecha)}&_=${Date.now()}`;
+        const response =
+            await fetch(url, {
+                method: "GET",
+                cache: "no-store"
+            });
+        if (!response.ok) {
+            throw new Error(
+                "Error HTTP " +
+                response.status
+            );
+        }
+        const resultado =
+            await response.json();
+        /*****************************************
+         * COMPROBAR RESPUESTA
+         *****************************************/
+        if (!Array.isArray(resultado)) {
+            throw new Error(
+                resultado.mensaje ||
+                resultado.error ||
+                "Respuesta incorrecta del servidor."
+            );
+        }
+        ocupadas = resultado;
+        /*****************************************
+         * LIMPIAR
+         *****************************************/
+        contenedor.innerHTML = "";
+        /*****************************************
+         * HORARIO DE LA PELUQUERÍA
+         *
+         * 11:30 - 23:00
+         *****************************************/
+        const inicio =
+            11 * 60 + 30;
+        const fin =
+            23 * 60;
+        const ahora =
+            new Date();
+        /*****************************************
+         * FECHA LOCAL
+         *
+         * No usamos toISOString() porque puede
+         * cambiar de día dependiendo de la zona
+         * horaria.
+         *****************************************/
+        const anio =
+            ahora.getFullYear();
+        const mes =
+            String(
+                ahora.getMonth() + 1
+            ).padStart(2, "0");
+        const dia =
+            String(
+                ahora.getDate()
+            ).padStart(2, "0");
+        const fechaHoy =
+            `${anio}-${mes}-${dia}`;
+        const esHoy =
+            fecha === fechaHoy;
+        const minutosActuales =
+            ahora.getHours() * 60 +
+            ahora.getMinutes();
+        /*****************************************
+         * CREAR BOTONES
+         *****************************************/
+        for (
+            let m = inicio;
+            m <= fin;
+            m += 30
+        ) {
+            const h =
+                Math.floor(m / 60);
+            const min =
+                m % 60;
+            const horaStr =
+                (
+                    h < 10
+                        ? "0" + h
+                        : h
+                ) +
+                ":" +
+                (
+                    min === 0
+                        ? "00"
+                        : min
+                );
+            /*****************************************
+             * BUSCAR SI ESTÁ OCUPADA
+             *****************************************/
+            const ocupadaInfo =
+                ocupadas.find(
+                    function(o) {
+                        return (
+                            String(o.hora)
+                                .substring(0, 5)
+                            === horaStr
+                        );
                     }
-                } else {
-                    btn.onclick = () => abrirModal(horaStr);
-                }
-
-                if (btn.style.display !== "none") {
-                    contenedor.appendChild(btn);
-                }
+                );
+            const estaOcupada =
+                !!ocupadaInfo;
+            /*****************************************
+             * COMPROBAR HORA PASADA
+             *
+             * Dejamos 1 hora de margen como
+             * hacía tu código original.
+             *****************************************/
+            let pasadaDeHora = false;
+            if (
+                esHoy &&
+                m <= minutosActuales + 60
+            ) {
+                pasadaDeHora = true;
             }
-        } catch (error) {
-            contenedor.innerHTML = "<p style='grid-column: span 2; text-align: center; color: #dc3545;'>Error al cargar.</p>";
+            /*****************************************
+             * CREAR BOTÓN
+             *****************************************/
+            const btn =
+                document.createElement(
+                    "button"
+                );
+            btn.type = "button";
+            btn.className = "slot";
+            btn.innerText = horaStr;
+            /*****************************************
+             * HORA RESERVADA
+             *****************************************/
+            if (
+                estaOcupada &&
+                ocupadaInfo.estado ===
+                    "Reservado"
+            ) {
+                btn.disabled = true;
+                btn.classList.add(
+                    "reservado"
+                );
+                btn.innerText =
+                    horaStr + " ❌";
+            }
+            /*****************************************
+             * HORA BLOQUEADA POR PELUQUERO
+             *****************************************/
+            else if (
+                estaOcupada &&
+                ocupadaInfo.estado ===
+                    "BloqueadoPeluquero"
+            ) {
+                btn.disabled = true;
+                btn.classList.add(
+                    "bloqueado"
+                );
+                btn.innerText =
+                    horaStr + " 🚫";
+            }
+            /*****************************************
+             * HORA PASADA
+             *****************************************/
+            else if (
+                pasadaDeHora
+            ) {
+                btn.disabled = true;
+                btn.classList.add(
+                    "pasado"
+                );
+                btn.innerText =
+                    horaStr + " ⏰";
+            }
+            /*****************************************
+             * HORA DISPONIBLE
+             *****************************************/
+            else {
+                btn.onclick =
+                    function() {
+                        abrirModal(
+                            horaStr
+                        );
+                    };
+            }
+            contenedor.appendChild(
+                btn
+            );
         }
-    }
-
-    function abrirModal(hora) {
-        horaSeleccionada = hora;
-        document.getElementById('infoCitaSeleccionada').innerText = `Día: ${document.getElementById('fecha').value} | Hora: ${hora}`;
-        document.getElementById('modalReserva').style.display = 'flex';
-    }
-
-    function cerrarModal() {
-        document.getElementById('modalReserva').style.display = 'none';
-    }
-
-    async function confirmarReserva() {
-        const nombre = document.getElementById('nombreCliente').value.trim();
-        const telefono = document.getElementById('telefonoCliente').value.trim();
-        const fecha = document.getElementById('fecha').value;
-
-        if (!nombre || !telefono) {
-            alert("Rellena nombre y teléfono.");
-            return;
+        /*****************************************
+         * SI NO HAY HORAS
+         *****************************************/
+        const botones =
+            contenedor.querySelectorAll(
+                ".slot"
+            );
+        if (botones.length === 0) {
+            contenedor.innerHTML = `
+                <div class="mensaje">
+                    No hay horarios disponibles
+                    para este día.
+                </div>
+            `;
         }
-
-        let datos = { action: "crearReserva", fecha: fecha, hora: horaSeleccionada, nombre: nombre, telefono: telefono };
-
-        try {
-            let response = await fetch(API_URL, { method: "POST", body: JSON.stringify(datos) });
-            let resultado = await response.json();
-            
-            if (resultado.status === "success") {
-                alert("¡Cita reservada con éxito!");
+    } catch (error) {
+        console.error(
+            "Error cargando disponibilidad:",
+            error
+        );
+        contenedor.innerHTML = `
+            <div class="mensaje error">
+                No se ha podido comprobar
+                la disponibilidad.
+                <br><br>
+                <button
+                    type="button"
+                    onclick="cargarHoras(true)"
+                    style="
+                        background:#007bff;
+                        color:white;
+                        border:none;
+                        cursor:pointer;
+                        font-weight:bold;
+                    "
+                >
+                    Reintentar
+                </button>
+            </div>
+        `;
+    }
+}
+/*************************************************
+ * ABRIR MODAL
+ *************************************************/
+function abrirModal(hora) {
+    horaSeleccionada =
+        hora;
+    const fecha =
+        document
+            .getElementById("fecha")
+            .value;
+    document
+        .getElementById(
+            "infoCitaSeleccionada"
+        )
+        .innerText =
+            `Día: ${fecha} | Hora: ${hora}`;
+    document
+        .getElementById(
+            "modalReserva"
+        )
+        .style.display = "flex";
+    document
+        .getElementById(
+            "nombreCliente"
+        )
+        .focus();
+}
+/*************************************************
+ * CERRAR MODAL
+ *************************************************/
+function cerrarModal() {
+    document
+        .getElementById(
+            "modalReserva"
+        )
+        .style.display = "none";
+    horaSeleccionada = "";
+}
+/*************************************************
+ * CERRAR MODAL AL PULSAR FUERA
+ *************************************************/
+document
+    .getElementById("modalReserva")
+    .addEventListener(
+        "click",
+        function(event) {
+            if (
+                event.target === this
+            ) {
                 cerrarModal();
-                document.getElementById('nombreCliente').value = "";
-                document.getElementById('telefonoCliente').value = "";
-                sessionStorage.clear(); // Limpia caché para forzar datos nuevos al instante
-                cargarHoras(true);
             }
-        } catch (error) {
-            alert("Error de conexión.");
         }
+    );
+/*************************************************
+ * CONFIRMAR RESERVA
+ *************************************************/
+async function confirmarReserva() {
+    const nombre =
+        document
+            .getElementById(
+                "nombreCliente"
+            )
+            .value
+            .trim();
+    const telefono =
+        document
+            .getElementById(
+                "telefonoCliente"
+            )
+            .value
+            .trim();
+    const fecha =
+        document
+            .getElementById(
+                "fecha"
+            )
+            .value;
+    const boton =
+        document
+            .getElementById(
+                "btnConfirmar"
+            );
+    /*********************************************
+     * COMPROBAR DATOS
+     *********************************************/
+    if (!nombre) {
+        alert(
+            "Rellena tu nombre."
+        );
+        return;
     }
+    if (!telefono) {
+        alert(
+            "Rellena tu teléfono."
+        );
+        return;
+    }
+    if (!fecha) {
+        alert(
+            "Selecciona una fecha."
+        );
+        return;
+    }
+    if (!horaSeleccionada) {
+        alert(
+            "Selecciona una hora."
+        );
+        return;
+    }
+    /*********************************************
+     * DESACTIVAR BOTÓN
+     *
+     * Evita que el cliente pulse varias veces.
+     *********************************************/
+    boton.disabled = true;
+    boton.innerText =
+        "Guardando cita...";
+    try {
+        const datos = {
+            action:
+                "crearReserva",
+            fecha:
+                fecha,
+            hora:
+                horaSeleccionada,
+            nombre:
+                nombre,
+            telefono:
+                telefono
+        };
+        /*****************************************
+         * ENVIAR A GOOGLE APPS SCRIPT
+         *****************************************/
+        const response =
+            await fetch(
+                API_URL,
+                {
+                    method: "POST",
+                    body:
+                        JSON.stringify(datos)
+                }
+            );
+        if (!response.ok) {
+            throw new Error(
+                "Error HTTP " +
+                response.status
+            );
+        }
+        const resultado =
+            await response.json();
+        console.log(
+            "Respuesta reserva:",
+            resultado
+        );
+        /*****************************************
+         * RESERVA CORRECTA
+         *****************************************/
+        if (
+            resultado.status ===
+            "success"
+        ) {
+            alert(
+                "¡Cita reservada con éxito!"
+            );
+            /*************************************
+             * CERRAR MODAL
+             *************************************/
+            cerrarModal();
+            /*************************************
+             * LIMPIAR CAMPOS
+             *************************************/
+            document
+                .getElementById(
+                    "nombreCliente"
+                )
+                .value = "";
+            document
+                .getElementById(
+                    "telefonoCliente"
+                )
+                .value = "";
+            /*************************************
+             * RECARGAR DISPONIBILIDAD
+             *
+             * Esto consulta Google Sheets
+             * inmediatamente.
+             *************************************/
+            await cargarHoras(true);
+        }
+        /*****************************************
+         * OTRA PERSONA LA RESERVÓ ANTES
+         *****************************************/
+        else if (
+            resultado.status ===
+            "ocupada"
+        ) {
+            alert(
+                "⚠️ Lo sentimos. " +
+                "Esta hora acaba de ser " +
+                "reservada por otra persona."
+            );
+            cerrarModal();
+            /*************************************
+             * VOLVER A CONSULTAR
+             *************************************/
+            await cargarHoras(true);
+        }
+        /*****************************************
+         * ERROR
+         *****************************************/
+        else {
+            alert(
+                resultado.mensaje ||
+                resultado.error ||
+                "No se ha podido realizar la reserva."
+            );
+        }
+    } catch (error) {
+        console.error(
+            "Error realizando reserva:",
+            error
+        );
+        alert(
+            "Error de conexión. " +
+            "Comprueba tu conexión a Internet " +
+            "e inténtalo de nuevo."
+        );
+    } finally {
+        /*****************************************
+         * VOLVER A ACTIVAR BOTÓN
+         *****************************************/
+        boton.disabled = false;
+        boton.innerText =
+            "Confirmar Cita";
+    }
+}
 </script>
-
 </body>
 </html>
