@@ -2,167 +2,1121 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Peluquería</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Panel Administrador - Peluquería</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 450px; box-sizing: border-box; }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        label { font-weight: bold; display: block; margin-top: 15px; color: #555; }
-        input, button { width: 100%; padding: 12px; margin-top: 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
-        input[type="date"] { background: #fff; font-weight: 500; }
-        
-        .slot-admin { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin-top: 10px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eee; font-size: 14px; }
-        .btn-accion { padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: 600; width: auto; margin: 0; font-size: 13px; }
-        .btn-bloquear { background: #dc3545; }
-        .btn-desbloquear { background: #28a745; }
-        .btn-dia { background: #343a40; color: white; margin-top: 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; padding: 12px; }
-        
-        .loading-container { text-align: center; padding: 30px; }
-        .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto 10px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .hidden { display: none; }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                sans-serif;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow:
+                0 4px 15px rgba(0,0,0,0.06);
+            margin-bottom: 15px;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            font-size: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            margin-top: 0;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        input,
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        input {
+            border: 1px solid #ddd;
+            background: white;
+        }
+        button {
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-login {
+            background: #007bff;
+            color: white;
+            margin-top: 12px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #222;
+        }
+        .acciones {
+            display: grid;
+            grid-template-columns:
+                repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .acciones button {
+            margin: 0;
+        }
+        .hora {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+        }
+        .hora-info {
+            min-width: 0;
+            flex: 1;
+        }
+        .hora-numero {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .hora-cliente {
+            font-size: 13px;
+            margin-top: 4px;
+            color: #666;
+            word-break: break-word;
+        }
+        .hora-disponible {
+            background: #f1fff4;
+            border-color: #b9e6c2;
+        }
+        .hora-reservada {
+            background: #fff3f3;
+            border-color: #f0b5b5;
+        }
+        .hora-bloqueada {
+            background: #eeeeee;
+            border-color: #ccc;
+        }
+        .hora-pasada {
+            background: #f5f5f5;
+            color: #999;
+        }
+        .estado {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .estado-disponible {
+            background: #d8f3df;
+            color: #18752d;
+        }
+        .estado-reservado {
+            background: #ffdcdc;
+            color: #a00000;
+        }
+        .estado-bloqueado {
+            background: #ddd;
+            color: #555;
+        }
+        .boton-hora {
+            width: 110px;
+            flex-shrink: 0;
+            font-size: 13px;
+            padding: 9px;
+        }
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+        }
+        .error {
+            background: #ffe6e6;
+            color: #a00000;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .success {
+            background: #e4f8e9;
+            color: #176b2a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .login-error {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .oculto {
+            display: none !important;
+        }
+        .cabecera-horas {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .cabecera-horas button {
+            width: auto;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        .resumen {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .resumen-item {
+            text-align: center;
+            padding: 10px 5px;
+            background: #f7f7f7;
+            border-radius: 8px;
+        }
+        .resumen-numero {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .resumen-texto {
+            font-size: 11px;
+            color: #777;
+        }
+        @media (max-width: 450px) {
+            .hora {
+                align-items: flex-start;
+            }
+            .boton-hora {
+                width: 95px;
+            }
+            .acciones {
+                grid-template-columns:
+                    1fr;
+            }
+        }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h2>Panel Peluquero</h2>
-    
-    <div id="loginSection">
-        <label>Contraseña:</label>
-        <input type="password" id="passAdmin" placeholder="Introduce la contraseña">
-        <button onclick="verificarLogin()" style="background: #007bff; color: white; margin-top: 15px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;">Entrar</button>
+    <!-- ======================================
+         LOGIN
+    ======================================= -->
+    <div
+        id="loginCard"
+        class="card"
+    >
+        <h1>
+            🔐 Panel de Administración
+        </h1>
+        <label for="password">
+            Contraseña
+        </label>
+        <input
+            type="password"
+            id="password"
+            placeholder="Introduce la contraseña"
+            autocomplete="current-password"
+        >
+        <button
+            class="btn-login"
+            onclick="iniciarSesion()"
+        >
+            Entrar
+        </button>
+        <div
+            id="loginError"
+            class="login-error"
+        ></div>
     </div>
-
-    <div id="panelSection" class="hidden">
-        <label for="fechaAdmin">Selecciona el día a gestionar:</label>
-        <input type="date" id="fechaAdmin" onchange="cargarAdminData(true)">
-        
-        <button id="btnDiaEntero" class="btn-dia" onclick="toggleDiaCompleto()">Bloquear Día Entero</button>
-
-        <div id="listaAdminHoras" style="margin-top: 20px;"></div>
+    <!-- ======================================
+         PANEL
+    ======================================= -->
+    <div
+        id="panel"
+        class="oculto"
+    >
+        <!-- ==================================
+             FECHA
+        =================================== -->
+        <div class="card">
+            <h1>
+                💈 Administración
+            </h1>
+            <label for="fecha">
+                Seleccionar fecha
+            </label>
+            <input
+                type="date"
+                id="fecha"
+                onchange="cargarDatos()"
+            >
+            <div class="acciones">
+                <button
+                    class="btn-danger"
+                    onclick="bloquearDia()"
+                >
+                    🚫 Bloquear día
+                </button>
+                <button
+                    class="btn-success"
+                    onclick="desbloquearDia()"
+                >
+                    🔓 Desbloquear día
+                </button>
+            </div>
+            <div
+                id="mensaje"
+            ></div>
+            <div
+                id="resumen"
+                class="resumen"
+            >
+                <div class="resumen-item">
+                    <div
+                        id="contadorDisponibles"
+                        class="resumen-numero"
+                    >
+                        0
+                    </div>
+                    <div class="resumen-texto">
+                        Disponibles
+                    </div>
+                </div>
+                <div class="resumen-item">
+                    <div
+                        id="contadorReservadas"
+                        class="resumen-numero"
+                    >
+                        0
+                    </div>
+                    <div class="resumen-texto">
+                        Reservadas
+                    </div>
+                </div>
+                <div class="resumen-item">
+                    <div
+                        id="contadorBloqueadas"
+                        class="resumen-numero"
+                    >
+                        0
+                    </div>
+                    <div class="resumen-texto">
+                        Bloqueadas
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ==================================
+             HORARIOS
+        =================================== -->
+        <div class="card">
+            <div class="cabecera-horas">
+                <h2>
+                    Horarios
+                </h2>
+                <button
+                    class="btn-primary"
+                    onclick="cargarDatos()"
+                >
+                    🔄 Actualizar
+                </button>
+            </div>
+            <div
+                id="listaHoras"
+            >
+                <div class="loading">
+                    Selecciona una fecha.
+                </div>
+            </div>
+        </div>
+        <!-- ==================================
+             CERRAR SESIÓN
+        =================================== -->
+        <div class="card">
+            <button
+                class="btn-secondary"
+                onclick="cerrarSesion()"
+            >
+                Cerrar sesión
+            </button>
+        </div>
     </div>
 </div>
-
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec"; // <-- PEGA TU URL AQUÍ
-    let passwordActual = "";
-    let diaBloqueadoActual = false;
-
-    async function verificarLogin() {
-        passwordActual = document.getElementById('passAdmin').value;
-        const fecha = new Date().toISOString().split('T')[0];
-        
-        let response = await fetch(`${API_URL}?action=getAdminData&pass=${passwordActual}&fecha=${fecha}`);
-        let data = await response.json();
-
-        if (data.error) {
-            alert("Contraseña incorrecta");
-        } else {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('panelSection').style.display = 'block';
-            document.getElementById('fechaAdmin').valueAsDate = new Date();
-            cargarAdminData(true);
-        }
+/*************************************************
+ * CONFIGURACIÓN
+ *************************************************/
+const API_URL =
+    "https://script.google.com/macros/s/AKfycbx7KQzKfXQH3yxOnP26nM3BNDOG_7adSEpS8rC1k1TcZv2pGAzLLuPdKj5WEPOIk_0/exec";
+let passwordAdmin = "";
+let datosActuales = [];
+/*************************************************
+ * INICIO
+ *************************************************/
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+        establecerFecha();
+        document
+            .getElementById("password")
+            .addEventListener(
+                "keydown",
+                function(event) {
+                    if (
+                        event.key === "Enter"
+                    ) {
+                        iniciarSesion();
+                    }
+                }
+            );
     }
-
-    async function cargarAdminData(forzar = false) {
-        const fecha = document.getElementById('fechaAdmin').value;
-        const contenedor = document.getElementById('listaAdminHoras');
-        
-        contenedor.innerHTML = `
-            <div class="loading-container">
-                <div class="spinner"></div>
-                <span style="color: #666; font-size: 13px;">Cargando gestión del día...</span>
+);
+/*************************************************
+ * FECHA ACTUAL
+ *************************************************/
+function establecerFecha() {
+    const ahora =
+        new Date();
+    const anio =
+        ahora.getFullYear();
+    const mes =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(2, "0");
+    const dia =
+        String(
+            ahora.getDate()
+        ).padStart(2, "0");
+    document
+        .getElementById("fecha")
+        .value =
+        `${anio}-${mes}-${dia}`;
+}
+/*************************************************
+ * INICIAR SESIÓN
+ *************************************************/
+async function iniciarSesion() {
+    const password =
+        document
+            .getElementById("password")
+            .value
+            .trim();
+    const error =
+        document
+            .getElementById("loginError");
+    error.innerText = "";
+    if (!password) {
+        error.innerText =
+            "Introduce la contraseña.";
+        return;
+    }
+    /*********************************************
+     * COMPROBAR CONTRASEÑA
+     *********************************************/
+    try {
+        const url =
+            `${API_URL}?action=getAdminData&pass=${encodeURIComponent(password)}&_=${Date.now()}`;
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+        const resultado =
+            await response.json();
+        if (
+            resultado &&
+            resultado.error
+        ) {
+            error.innerText =
+                resultado.error;
+            return;
+        }
+        if (!Array.isArray(resultado)) {
+            error.innerText =
+                "No se ha podido acceder al panel.";
+            return;
+        }
+        /*****************************************
+         * LOGIN CORRECTO
+         *****************************************/
+        passwordAdmin =
+            password;
+        document
+            .getElementById(
+                "loginCard"
+            )
+            .classList
+            .add("oculto");
+        document
+            .getElementById(
+                "panel"
+            )
+            .classList
+            .remove("oculto");
+        cargarDatos();
+    } catch (e) {
+        console.error(e);
+        error.innerText =
+            "Error de conexión con Google Sheets.";
+    }
+}
+/*************************************************
+ * CARGAR DATOS
+ *************************************************/
+async function cargarDatos() {
+    const fecha =
+        document
+            .getElementById("fecha")
+            .value;
+    const lista =
+        document
+            .getElementById("listaHoras");
+    if (!fecha) {
+        lista.innerHTML = `
+            <div class="loading">
+                Selecciona una fecha.
             </div>
         `;
-
-        let registros = [];
-        let cacheKey = "admin_cache_" + fecha;
-        let ahoraMs = new Date().getTime();
-
-        if (!forzar && sessionStorage.getItem(cacheKey)) {
-            registros = JSON.parse(sessionStorage.getItem(cacheKey));
-        } else {
-            let response = await fetch(`${API_URL}?action=getAdminData&pass=${passwordActual}&fecha=${fecha}`);
-            registros = await response.json();
-            sessionStorage.setItem(cacheKey, JSON.stringify(registros));
-        }
-
-        contenedor.innerHTML = "";
-
-        let inicio = 11 * 60 + 30;
-        let fin = 23 * 60;
-        let totalBloqueadosPeluquero = 0;
-        let totalHoras = 0;
-
-        for (let m = inicio; m <= fin; m += 30) {
-            let h = Math.floor(m / 60);
-            let min = m % 60;
-            let horaStr = (h < 10 ? "0" + h : h) + ":" + (min === 0 ? "00" : min);
-            totalHoras++;
-
-            let registroHora = registros.find(r => r.fecha === fecha && r.hora === horaStr);
-            
-            let div = document.createElement('div');
-            div.className = "slot-admin";
-
-            let textoEstado = `${horaStr} - 🟢 Libre`;
-            let btnHtml = `<button class="btn-accion btn-bloquear" onclick="toggleBloqueo('${horaStr}')">Bloquear</button>`;
-
-            if (registroHora) {
-                if (registroHora.estado === "Reservado") {
-                    textoEstado = `${horaStr} - 👤 ${registroHora.nombre} (${registroHora.telefono})`;
-                    btnHtml = `<button class="btn-accion btn-bloquear" onclick="toggleBloqueo('${horaStr}')">Anular Cita</button>`;
-                } else if (registroHora.estado === "BloqueadoPeluquero") {
-                    textoEstado = `${horaStr} - 🚫 Bloqueado`;
-                    btnHtml = `<button class="btn-accion btn-desbloquear" onclick="toggleBloqueo('${horaStr}')">Desbloquear</button>`;
-                    totalBloqueadosPeluquero++;
+        return;
+    }
+    lista.innerHTML = `
+        <div class="loading">
+            ⏳ Cargando horarios...
+        </div>
+    `;
+    try {
+        const url =
+            `${API_URL}?action=getAdminData&pass=${encodeURIComponent(passwordAdmin)}&_=${Date.now()}`;
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+                    cache: "no-store"
                 }
+            );
+        const resultado =
+            await response.json();
+        if (
+            resultado &&
+            resultado.error
+        ) {
+            cerrarSesion();
+            alert(
+                "La sesión ha caducado."
+            );
+            return;
+        }
+        if (!Array.isArray(resultado)) {
+            throw new Error(
+                "Respuesta incorrecta."
+            );
+        }
+        datosActuales =
+            resultado;
+        mostrarHorarios(
+            fecha
+        );
+    } catch (error) {
+        console.error(error);
+        lista.innerHTML = `
+            <div class="error">
+                No se han podido cargar
+                los horarios.
+                <br><br>
+                <button
+                    class="btn-primary"
+                    onclick="cargarDatos()"
+                >
+                    Reintentar
+                </button>
+            </div>
+        `;
+    }
+}
+/*************************************************
+ * MOSTRAR HORARIOS
+ *************************************************/
+function mostrarHorarios(fecha) {
+    const lista =
+        document
+            .getElementById(
+                "listaHoras"
+            );
+    lista.innerHTML = "";
+    /*********************************************
+     * HORARIO
+     *
+     * 11:30 - 23:00
+     *********************************************/
+    const inicio =
+        11 * 60 + 30;
+    const fin =
+        23 * 60;
+    const ahora =
+        new Date();
+    const anio =
+        ahora.getFullYear();
+    const mes =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(2, "0");
+    const dia =
+        String(
+            ahora.getDate()
+        ).padStart(2, "0");
+    const fechaHoy =
+        `${anio}-${mes}-${dia}`;
+    const esHoy =
+        fecha === fechaHoy;
+    const minutosActuales =
+        ahora.getHours() * 60 +
+        ahora.getMinutes();
+    let disponibles = 0;
+    let reservadas = 0;
+    let bloqueadas = 0;
+    /*********************************************
+     * CREAR CADA HORA
+     *********************************************/
+    for (
+        let m = inicio;
+        m <= fin;
+        m += 30
+    ) {
+        const h =
+            Math.floor(m / 60);
+        const min =
+            m % 60;
+        const hora =
+            (
+                h < 10
+                    ? "0" + h
+                    : h
+            ) +
+            ":" +
+            (
+                min === 0
+                    ? "00"
+                    : min
+            );
+        /*****************************************
+         * BUSCAR REGISTRO
+         *****************************************/
+        const registro =
+            datosActuales.find(
+                function(item) {
+                    return (
+                        item.fecha === fecha &&
+                        String(item.hora)
+                            .substring(0, 5)
+                        === hora
+                    );
+                }
+            );
+        /*****************************************
+         * CONTENEDOR
+         *****************************************/
+        const fila =
+            document.createElement(
+                "div"
+            );
+        fila.className =
+            "hora";
+        const info =
+            document.createElement(
+                "div"
+            );
+        info.className =
+            "hora-info";
+        const numero =
+            document.createElement(
+                "div"
+            );
+        numero.className =
+            "hora-numero";
+        numero.innerText =
+            hora;
+        info.appendChild(
+            numero
+        );
+        const boton =
+            document.createElement(
+                "button"
+            );
+        boton.className =
+            "boton-hora";
+        /*****************************************
+         * RESERVADA
+         *****************************************/
+        if (
+            registro &&
+            registro.estado ===
+                "Reservado"
+        ) {
+            reservadas++;
+            fila.classList.add(
+                "hora-reservada"
+            );
+            const cliente =
+                document.createElement(
+                    "div"
+                );
+            cliente.className =
+                "hora-cliente";
+            cliente.innerHTML =
+                `<strong>Cliente:</strong>
+                 ${escaparHTML(
+                     registro.nombre || "-"
+                 )}
+                 <br>
+                 <strong>Tel:</strong>
+                 ${escaparHTML(
+                     registro.telefono || "-"
+                 )}`;
+            info.appendChild(
+                cliente
+            );
+            const estado =
+                document.createElement(
+                    "span"
+                );
+            estado.className =
+                "estado estado-reservado";
+            estado.innerText =
+                "RESERVADA";
+            info.appendChild(
+                estado
+            );
+            boton.className +=
+                " btn-danger";
+            boton.innerText =
+                "❌ Reservada";
+            /*
+             * Una reserva no se modifica
+             * directamente desde este panel.
+             */
+            boton.disabled = true;
+        }
+        /*****************************************
+         * BLOQUEADA
+         *****************************************/
+        else if (
+            registro &&
+            registro.estado ===
+                "BloqueadoPeluquero"
+        ) {
+            bloqueadas++;
+            fila.classList.add(
+                "hora-bloqueada"
+            );
+            const estado =
+                document.createElement(
+                    "span"
+                );
+            estado.className =
+                "estado estado-bloqueado";
+            estado.innerText =
+                "BLOQUEADA";
+            info.appendChild(
+                estado
+            );
+            boton.className +=
+                " btn-success";
+            boton.innerText =
+                "🔓 Desbloquear";
+            boton.onclick =
+                function() {
+                    desbloquearHora(
+                        fecha,
+                        hora
+                    );
+                };
+        }
+        /*****************************************
+         * DISPONIBLE
+         *****************************************/
+        else {
+            disponibles++;
+            fila.classList.add(
+                "hora-disponible"
+            );
+            const estado =
+                document.createElement(
+                    "span"
+                );
+            estado.className =
+                "estado estado-disponible";
+            estado.innerText =
+                "DISPONIBLE";
+            info.appendChild(
+                estado
+            );
+            boton.className +=
+                " btn-danger";
+            boton.innerText =
+                "🚫 Bloquear";
+            boton.onclick =
+                function() {
+                    bloquearHora(
+                        fecha,
+                        hora
+                    );
+                };
+        }
+        fila.appendChild(
+            info
+        );
+        fila.appendChild(
+            boton
+        );
+        lista.appendChild(
+            fila
+        );
+    }
+    /*********************************************
+     * ACTUALIZAR CONTADORES
+     *********************************************/
+    document
+        .getElementById(
+            "contadorDisponibles"
+        )
+        .innerText =
+        disponibles;
+    document
+        .getElementById(
+            "contadorReservadas"
+        )
+        .innerText =
+        reservadas;
+    document
+        .getElementById(
+            "contadorBloqueadas"
+        )
+        .innerText =
+        bloqueadas;
+}
+/*************************************************
+ * BLOQUEAR HORA
+ *************************************************/
+async function bloquearHora(
+    fecha,
+    hora
+) {
+    const confirmar =
+        confirm(
+            `¿Quieres bloquear la hora ${hora} del día ${fecha}?`
+        );
+    if (!confirmar) {
+        return;
+    }
+    try {
+        await enviarAccion(
+            "toggleBloqueo",
+            {
+                fecha: fecha,
+                hora: hora
             }
-
-            div.innerHTML = `<span>${textoEstado}</span>${btnHtml}`;
-            contenedor.appendChild(div);
-        }
-
-        const btnDia = document.getElementById('btnDiaEntero');
-        if (totalBloqueadosPeluquero >= (totalHoras / 2)) {
-            diaBloqueadoActual = true;
-            btnDia.innerText = "🔓 Desbloquear Día Entero";
-            btnDia.style.background = "#28a745";
-        } else {
-            diaBloqueadoActual = false;
-            btnDia.innerText = "🔒 Bloquear Día Entero";
-            btnDia.style.background = "#343a40";
-        }
+        );
+        mostrarMensaje(
+            "Hora bloqueada correctamente.",
+            "success"
+        );
+        await cargarDatos();
+    } catch (error) {
+        alert(
+            "No se ha podido bloquear la hora."
+        );
     }
-
-    async function toggleBloqueo(hora) {
-        const fecha = document.getElementById('fechaAdmin').value;
-        let datos = { action: "toggleBloqueo", pass: passwordActual, fecha: fecha, hora: hora };
-
-        await fetch(API_URL, { method: "POST", body: JSON.stringify(datos) });
-        sessionStorage.clear();
-        cargarAdminData(true);
+}
+/*************************************************
+ * DESBLOQUEAR HORA
+ *************************************************/
+async function desbloquearHora(
+    fecha,
+    hora
+) {
+    const confirmar =
+        confirm(
+            `¿Quieres desbloquear la hora ${hora} del día ${fecha}?`
+        );
+    if (!confirmar) {
+        return;
     }
-
-    async function toggleDiaCompleto() {
-        const fecha = document.getElementById('fechaAdmin').value;
-        let datos = { action: "toggleBloqueoDia", pass: passwordActual, fecha: fecha, bloquear: !diaBloqueadoActual };
-
-        let response = await fetch(API_URL, { method: "POST", body: JSON.stringify(datos) });
-        let resultado = await response.json();
-
-        if (resultado.status === "success") {
-            sessionStorage.clear();
-            cargarAdminData(true);
-        } else {
-            alert("Error al actualizar el día.");
-        }
+    try {
+        await enviarAccion(
+            "toggleBloqueo",
+            {
+                fecha: fecha,
+                hora: hora
+            }
+        );
+        mostrarMensaje(
+            "Hora desbloqueada correctamente.",
+            "success"
+        );
+        await cargarDatos();
+    } catch (error) {
+        alert(
+            "No se ha podido desbloquear la hora."
+        );
     }
+}
+/*************************************************
+ * BLOQUEAR DÍA
+ *************************************************/
+async function bloquearDia() {
+    const fecha =
+        document
+            .getElementById("fecha")
+            .value;
+    if (!fecha) {
+        alert(
+            "Selecciona una fecha."
+        );
+        return;
+    }
+    const confirmar =
+        confirm(
+            `¿Quieres bloquear TODAS las horas del día ${fecha}?`
+        );
+    if (!confirmar) {
+        return;
+    }
+    try {
+        await enviarAccion(
+            "toggleBloqueoDia",
+            {
+                fecha: fecha,
+                bloquear: "true"
+            }
+        );
+        mostrarMensaje(
+            "Día bloqueado correctamente.",
+            "success"
+        );
+        await cargarDatos();
+    } catch (error) {
+        alert(
+            "No se ha podido bloquear el día."
+        );
+    }
+}
+/*************************************************
+ * DESBLOQUEAR DÍA
+ *************************************************/
+async function desbloquearDia() {
+    const fecha =
+        document
+            .getElementById("fecha")
+            .value;
+    if (!fecha) {
+        alert(
+            "Selecciona una fecha."
+        );
+        return;
+    }
+    const confirmar =
+        confirm(
+            `¿Quieres desbloquear el día ${fecha}?`
+        );
+    if (!confirmar) {
+        return;
+    }
+    try {
+        await enviarAccion(
+            "toggleBloqueoDia",
+            {
+                fecha: fecha,
+                bloquear: "false"
+            }
+        );
+        mostrarMensaje(
+            "Día desbloqueado correctamente.",
+            "success"
+        );
+        await cargarDatos();
+    } catch (error) {
+        alert(
+            "No se ha podido desbloquear el día."
+        );
+    }
+}
+/*************************************************
+ * ENVIAR ACCIÓN AL APPS SCRIPT
+ *************************************************/
+async function enviarAccion(
+    action,
+    datos = {}
+) {
+    const body = {
+        action:
+            action,
+        pass:
+            passwordAdmin,
+        ...datos
+    };
+    const response =
+        await fetch(
+            API_URL,
+            {
+                method: "POST",
+                body:
+                    JSON.stringify(body)
+            }
+        );
+    if (!response.ok) {
+        throw new Error(
+            "Error HTTP " +
+            response.status
+        );
+    }
+    const resultado =
+        await response.json();
+    if (
+        resultado.error
+    ) {
+        throw new Error(
+            resultado.error
+        );
+    }
+    if (
+        resultado.status ===
+        "error"
+    ) {
+        throw new Error(
+            resultado.mensaje ||
+            "Error desconocido."
+        );
+    }
+    return resultado;
+}
+/*************************************************
+ * MENSAJES
+ *************************************************/
+function mostrarMensaje(
+    texto,
+    tipo
+) {
+    const elemento =
+        document
+            .getElementById(
+                "mensaje"
+            );
+    elemento.className =
+        tipo === "success"
+            ? "success"
+            : "error";
+    elemento.innerText =
+        texto;
+    setTimeout(
+        function() {
+            elemento.innerText =
+                "";
+            elemento.className =
+                "";
+        },
+        3000
+    );
+}
+/*************************************************
+ * ESCAPAR HTML
+ *
+ * Evita que un nombre introducido por un cliente
+ * pueda convertirse en código HTML.
+ *************************************************/
+function escaparHTML(texto) {
+    const div =
+        document.createElement(
+            "div"
+        );
+    div.textContent =
+        String(texto);
+    return div.innerHTML;
+}
+/*************************************************
+ * CERRAR SESIÓN
+ *************************************************/
+function cerrarSesion() {
+    passwordAdmin =
+        "";
+    datosActuales =
+        [];
+    document
+        .getElementById(
+            "panel"
+        )
+        .classList
+        .add("oculto");
+    document
+        .getElementById(
+            "loginCard"
+        )
+        .classList
+        .remove("oculto");
+    document
+        .getElementById(
+            "password"
+        )
+        .value = "";
+    document
+        .getElementById(
+            "loginError"
+        )
+        .innerText = "";
+}
 </script>
-
 </body>
 </html>
